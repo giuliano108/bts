@@ -1,0 +1,4 @@
+  Please, note that if  you  want  to  link  some external assembly code
+DIRECTLY into a pascal program (without stuffin'  it  in  a  unit),  you
+should modify the procedure declaration (in the .asm) to NEAR, otherwise
+things won't work....

@@ -1,0 +1,133 @@
+Indice :
+1. Avvertenze
+2. Cos'e' la syncword
+3. X renderti la vita + facile
+4. Tutti gli eventi
+5. La mia, provvisoria, sincronizzazione con aryx.s3m
+6. Compilazione
+
+-Avvertenze preliminari :
+  L'intro non va sotto Windoze 85....  :( Non e' colpa mia ma del Midas,
+senza Midas (il player che uso) l'intro gira pure in finestra....
+(anzi, se mi lascerai qualche byte di spazio faro'  l'autodetection  del
+windoze)
+  L'intro  ha  bisogno  di  mezzo  mega  di  XMS, quindi fai che ci sia
+(dovrebbe dare un errore se non lo trova).
+  Se l'autodetection fallisce,  puoi  forzare  la configurazione manuale
+della scheda sonora lanciando l'intro con un parametro  qualsiasi  sulla
+command line....
+
+-Tutto cio' che c'e' da sapere....
+
+  C'e' una lista di costanti  che  rappresentano l'inizio (o la fine) di
+un evento.... Ognuno  di questi numeri e' legato alla musica in questo modo:  
+  SYNCWORD = SONGORDER*256+PATTERNROW
+
+  SONGORDER sai cos'e'.... (order list and variables, mi sembra F1
+dell'ST3) (non si possono usare i numeri dei pattern xche' potrebbero
+anche venir ripetuti). 
+  PATTERNROW e' la riga del pattern correntemente suonata....
+  nota : Tutte le numerazioni cominciano da zero.
+  Chiamo  'sto  valore SYNCWORD xche' e' proprio una word e determina la
+sincronia con la musica, negli 8  bit  bassi  c'e' la riga del pattern e
+negli 8 bit alti c'e' il songorder....
+
+  Cose utili che devi sapere (le $define):
+  All'inizio  di  btsea.pas   ci   sono   3  direttive  di  compilazione
+condizionale, le $define.
+{$meminfo}
+  lasciala pure disattivata, serviva a me x sapere quanta mem
+c'era, a te e' inutile.  (ah, x disattivare una $define basta  mettergli
+un'altra  parentesi  graffa  davanti {$define ....} (<- cosi' e' attiva)
+{{$define ....} (<- cosi' e' disattivata) )
+
+{$define swdump}
+  questa e' quella + utile, se e'  attiva il buon pascal genera un pezzo
+  di codice in + che ti permette di fare questo :  mentre stai guardando
+l'intro se premi 'd' (o 'D' :)  )  ti scrive su un file di nome 'swords'
+la syncword al momento  della  pressione  del  tasto  'D'....  Ovviamente
+e' da disattivare nella vrs. finale.
+
+{$define partskip}
+  questa  serve  x permettere, alla pressione del tasto ESC, di skippare
+tra le varie parti (altrimenti all'ESC  ti ritrovi al dos....)  Cmq a te
+non serve xche' skippando tra le parti si perde il sincronismo tra intro
+e musica....
+
+
+-EVENTI-
+
+  li trovi tutti nel file "events.inc".  Contengono tutte  le  syncwords
+che scatenano i corrispondenti eventi.
+  Nota  che  tu,  x  esempio,  non regoli _la durata_ di una dissolvenza
+(fade), ma solo quando finisce.  La  fine di una dissolvenza e' l'inizio
+della seguente, tutti gli  eventi  si  susseguono....  (ue', ci ho messo
+anche un po' di "guida all'interpretazione dell'intro"
+
+ts_introfadeend       e' l'inizio della dissolvenza incrociata, quando
+                      appare la scritta "beyond the sea" che "viene su"
+ts_xfadeinend         Inizio della dissolvenza incrociata, al contrario,
+                      la scritta sparisce
+ts_xfadeoutend        la fine della dissolvenza "in giu", non cosi'
+                      importante, mettilo ad un valore cmq minore 
+                      di ts_endpart1
+ts_endpart1           la fine della prima parte (quella del bump), il 
+                      momento in cui parte il flash e  ti  ritrovi  alla
+                      parte delle gocce. Importantissimo !
+ts_endpart2           la fine della parte delle gocce, quando la scritta
+                      "BeyOnd  the Sea" ormai dissolta dall'acqua "vola"
+                      via ed entra il diamante. Importante pure questo.
+
+  A questo punto  c'e'  la  parte  con  il  diamante,  che non ha nessun
+sincronismo con la musica (xo' cmq dura un tempo fisso,  in  70esimi  di
+secondo).   Quando  "entri"  dentro  il  diamante  comincia la parte dei
+tunnel,  sei  dentro  il  diamante,  il   "cuore"  e  vai  sempre  +  in
+profondita', i tuoi sensi si confondono.....
+  Qua se riesci ad accentare la parte in cui entri nel diamante  e'  una
+gran cosa, ti puoi basare xo' solo sul tempo.
+  Una volta nel tunnel, invece, hai il controllo su tutto:
+
+tun_water             primo  passaggio  tra  il tunnel "normale" (quello
+                      che all'inizio ti  viene  dritto  in  faccia e poi
+                      comincia a ruotare).  Determina il primo flash  ed
+                      il passaggio al tunnel + "acquatico"
+tun_disp              secondo  flash,  fine  del  tunnel  "acquatico"  e
+                      passaggio al tunnel "displaced" (quello che sembra
+                      un po' bumbato, un po' in trasparenza)
+tun_smokey            terzo  flash,  fine   del   tunnel  "displaced"  e
+                      passaggio al tunnel "fumoso" (smokey, in  english)
+                      i  sensi  ormai  non si ripigliano piu' e ti senti
+                      veramente confuso
+tun_end               l'inizio  della  dissolvenza  al  nero,  il tunnel
+                      fumoso sfuma e c'e' una pausa,  giusto  prima  dei
+                      crediti
+tun_end2              l'ingresso  dei crediti, adesso dipende come farai
+                      la musica, ma  se  durante  i crediti cambiera' un
+                      po' qua puoi far fare all'intro una piccola pausa,
+                      ed aspettare che entri la musica dei creditz
+
+  A questo punto siamo nei crediti, ci sono solo + due eventi :
+
+lastfade              l'ultimo fade al nero deve arrivare solo dopo  che
+                      tutti i crediti sono passati
+endoftheintro         la  fine  vera e propria dell'intro, questo evento
+                      ti ributta al DOS
+
+
+-Come ho sincronizzato-
+  Dunque, io ho preso il primo modulo che mi e' capitato  a  tiro  e  ce
+l'ho  schiaffato  dentro,  si chiama aryx.s3m e te lo includo cosi' puoi
+magari  dare  un'occhiata  alla  corrispondenza  syncword<->eventi.   La
+sincronizzazione  l'ho   fatta   fregandomene   altamente  di  eventuali
+battute/accenti della colonna sonora.  Ho premuto 'D' ai momenti  giusti
+e  ho  ricopiato le syncwords in 'events.inc', tutto qua....  (a dire il
+vero una battuta  sincronizzata  c'e',  ed  e'  su  ts_endpart2, lo puoi
+notare tu stesso)
+
+-Compilazione-
+  X ricompilare e pakkare il tutto basta che tu lanci MKE.BAT, prima xo'
+devi editare la linea che adesso e' cosi':
+  binobj aryx.s3m muzik.obj music
+         ^^^^^^^^
+cambiando solo il nome del .s3m che usi come colonna sonora, in modo  da
+poterla importare nell'intro.
